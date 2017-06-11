@@ -35,7 +35,7 @@ class Connection
         $this->stream = $stream;
 
         // write our (empty) methods description
-        @fwrite($this->stream, json_encode(array('method' => 'methods'))."\n");
+        @fwrite($this->stream, json_encode(['method' => 'methods'])."\n");
 
         // read remote methods
         $line = fgets($this->stream);
@@ -78,7 +78,7 @@ class Connection
      * @throws Exception\IOException              Thrown in case of network error
      * @throws Exception\ProtocolException        thrown if remote answer does not have supported format
      */
-    public function call($method, array $arguments = array())
+    public function call($method, array $arguments = [])
     {
         if ($this->closed) {
             throw new Exception\ConnectionClosedException();
@@ -89,13 +89,18 @@ class Connection
         }
 
         $callbacks = new \stdclass();
-        $callbacks->{++$this->callbackNumber} = array(count($arguments));
+        $callbacks->{++$this->callbackNumber} = [count($arguments)];
 
-        @fwrite($this->stream, json_encode(array(
-                'method' => $method,
-                'arguments' => $arguments,
-                'callbacks' => $callbacks,
-            ))."\n");
+        @fwrite(
+            $this->stream,
+            json_encode(
+                [
+                    'method' => $method,
+                    'arguments' => $arguments,
+                    'callbacks' => $callbacks,
+                ]
+            ) ."\n"
+        );
 
         // this will block the stream until response is read
         $line = fgets($this->stream);
@@ -124,7 +129,7 @@ class Connection
             throw new Exception\ProtocolException("Response contains callbacks, we do not support that: $line");
         }
         if (!array_key_exists('arguments', $message)) {
-            return array();
+            return [];
         }
         if (!is_array($message['arguments'])) {
             throw new Exception\ProtocolException("Response arguments must be array: $line");

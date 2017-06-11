@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Simple echo dnode service",
   "author": "erasys GmbH",
-  "license" : "BSD-3-Clause",
+  "license": "BSD-3-Clause",
   "repository": "erasys/dnode-php-sync-client",
   "dependencies": {
     "dnode": "~1.2.2"

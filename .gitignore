@@ -1,3 +1,4 @@
 composer.lock
 tests/node/node_modules/
+tests/node/package-lock.json
 vendor/

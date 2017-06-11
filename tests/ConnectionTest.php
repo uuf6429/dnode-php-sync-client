@@ -4,21 +4,14 @@ namespace uuf6429\DnodeSyncClient;
 
 class ConnectionTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @var TestStreamWrapper
-     */
-    protected $wrapper;
-
     public function setUp()
     {
-        $this->wrapper = new TestStreamWrapper();
         stream_wrapper_register('testwrapper', TestStreamWrapper::class);
     }
 
     public function tearDown()
     {
         stream_wrapper_unregister('testwrapper');
-        TestStreamWrapper::getWrites(); // clear stuff written to wrapper
     }
 
     public function testMethodsAreReadFromRemote()
@@ -35,7 +28,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     public function testRemoteMethodsAreParsed()
     {
         $stream = fopen('testwrapper://', 'rw');
-        TestStreamWrapper::addRead("invalid json\n");
+        TestStreamWrapper::instance()->addRead("invalid json\n");
 
         $this->setExpectedException(
             Exception\ProtocolException::class,
@@ -47,7 +40,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     public function testRemoteMethodsMethodFieldIsChecked()
     {
         $stream = fopen('testwrapper://', 'rw');
-        TestStreamWrapper::addRead("{}\n");
+        TestStreamWrapper::instance()->addRead("{}\n");
 
         $this->setExpectedException(
             Exception\ProtocolException::class,
@@ -59,7 +52,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     public function testFirstRemoteMethodMustBeMethods()
     {
         $stream = fopen('testwrapper://', 'rw');
-        TestStreamWrapper::addRead('{"method": "not-methods"}'."\n");
+        TestStreamWrapper::instance()->addRead('{"method": "not-methods"}'."\n");
 
         $this->setExpectedException(
             Exception\ProtocolException::class,
@@ -71,7 +64,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     public function testRemoteMethodsArgumentsMustNotBeMissing()
     {
         $stream = fopen('testwrapper://', 'rw');
-        TestStreamWrapper::addRead('{"method": "methods"}'."\n");
+        TestStreamWrapper::instance()->addRead('{"method": "methods"}'."\n");
 
         $this->setExpectedException(
             Exception\ProtocolException::class,
@@ -83,7 +76,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     public function testRemoteMethodsArgumentsMustNotBeEmpty()
     {
         $stream = fopen('testwrapper://', 'rw');
-        TestStreamWrapper::addRead('{"method": "methods", "arguments": []}'."\n");
+        TestStreamWrapper::instance()->addRead('{"method": "methods", "arguments": []}'."\n");
 
         $this->setExpectedException(
             Exception\ProtocolException::class,
@@ -96,7 +89,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     {
         $stream = fopen('testwrapper://', 'rw');
         $response = '{"method": "methods", "arguments": [{}]}';
-        TestStreamWrapper::addRead("$response\n");
+        TestStreamWrapper::instance()->addRead("$response\n");
 
         $this->setExpectedException(
             Exception\ProtocolException::class,
@@ -108,14 +101,14 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     public function testMethodsAreSentToRemote()
     {
         $stream = fopen('testwrapper://', 'rw');
-        TestStreamWrapper::addRead('{"method": "methods", '
+        TestStreamWrapper::instance()->addRead('{"method": "methods", '
             .'"arguments": [{"method1": ""}]}'."\n");
 
         new Connection($stream);
 
         $this->assertEquals(
-            array('{"method":"methods"}'."\n"),
-            TestStreamWrapper::getWrites()
+            ['{"method":"methods"}'."\n"],
+            TestStreamWrapper::instance()->getWrites()
         );
     }
 
@@ -124,7 +117,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         $connection = $this->initConnection();
 
         $this->assertEquals(
-            array('method1', 'method2'),
+            ['method1', 'method2'],
             $connection->getAvailableMethods()
         );
     }
@@ -132,11 +125,12 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     private function initConnection()
     {
         $stream = fopen('testwrapper://', 'rw');
-        TestStreamWrapper::addRead('{"method": "methods", '
+        TestStreamWrapper::instance()->addRead('{"method": "methods", '
             .'"arguments": [{"method1": "", "method2": ""}]}'."\n");
 
         $connection = new Connection($stream);
-        TestStreamWrapper::getWrites(); // clear stuff written to wrapper
+        TestStreamWrapper::instance()->getWrites(); // clear stuff written to wrapper
+
         return $connection;
     }
 
@@ -144,13 +138,12 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     {
         $connection = $this->initConnection();
 
-        TestStreamWrapper::addRead('{"method": 42}'."\n");
-
-        $connection->call('method1', array('arg1', 2));
+        TestStreamWrapper::instance()->addRead('{"method": 42}'."\n");
+        $connection->call('method1', ['arg1', 2]);
 
         $this->assertEquals(
-            array('{"method":"method1","arguments":["arg1",2],"callbacks":{"42":[2]}}'."\n"),
-            TestStreamWrapper::getWrites()
+            ['{"method":"method1","arguments":["arg1",2],"callbacks":{"42":[2]}}'."\n"],
+            TestStreamWrapper::instance()->getWrites()
         );
     }
 
@@ -158,17 +151,17 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     {
         $connection = $this->initConnection();
 
-        TestStreamWrapper::addRead('{"method": 42}'."\n");
+        TestStreamWrapper::instance()->addRead('{"method": 42}'."\n");
         $connection->call('method1');
 
-        TestStreamWrapper::getWrites(); // clear stuff written to wrapper
+        TestStreamWrapper::instance()->getWrites(); // clear stuff written to wrapper
 
-        TestStreamWrapper::addRead('{"method": 43}'."\n");
+        TestStreamWrapper::instance()->addRead('{"method": 43}'."\n");
         $connection->call('method1');
 
         $this->assertEquals(
-            array('{"method":"method1","arguments":[],"callbacks":{"43":[0]}}'."\n"),
-            TestStreamWrapper::getWrites()
+            ['{"method":"method1","arguments":[],"callbacks":{"43":[0]}}'."\n"],
+            TestStreamWrapper::instance()->getWrites()
         );
     }
 
@@ -176,7 +169,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     {
         $connection = $this->initConnection();
 
-        TestStreamWrapper::addRead('{"method": 41}'."\n");
+        TestStreamWrapper::instance()->addRead('{"method": 41}'."\n");
 
         $this->setExpectedException(
             Exception\ProtocolException::class,
@@ -190,7 +183,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     {
         $connection = $this->initConnection();
 
-        TestStreamWrapper::addRead("invalid json\n");
+        TestStreamWrapper::instance()->addRead("invalid json\n");
 
         $this->setExpectedException(
             Exception\ProtocolException::class,
@@ -204,7 +197,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     {
         $connection = $this->initConnection();
 
-        TestStreamWrapper::addRead("{}\n");
+        TestStreamWrapper::instance()->addRead("{}\n");
 
         $this->setExpectedException(
             Exception\ProtocolException::class,
@@ -230,7 +223,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     {
         $connection = $this->initConnection();
 
-        TestStreamWrapper::addRead('{"method": 42, "links": [1]}'."\n");
+        TestStreamWrapper::instance()->addRead('{"method": 42, "links": [1]}'."\n");
 
         $this->setExpectedException(
             Exception\ProtocolException::class,
@@ -245,7 +238,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         $connection = $this->initConnection();
 
         $response = '{"method": 42, "callbacks": {"1":[0]}}';
-        TestStreamWrapper::addRead($response."\n");
+        TestStreamWrapper::instance()->addRead($response."\n");
 
         $this->setExpectedException(
             Exception\ProtocolException::class,
@@ -260,7 +253,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         $connection = $this->initConnection();
 
         $response = '{"method": 42, "arguments": null}';
-        TestStreamWrapper::addRead($response."\n");
+        TestStreamWrapper::instance()->addRead($response."\n");
 
         $this->setExpectedException(
             Exception\ProtocolException::class,
