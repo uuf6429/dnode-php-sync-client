@@ -89,18 +89,18 @@ class DnodeTest extends \PHPUnit_Framework_TestCase
     {
         $connection = $this->dnode->connect(self::DNODE_TEST_HOST, self::DNODE_TEST_PORT);
 
-        $response = $connection->call('echo', array('argument'));
+        $response = $connection->call('echo', ['argument']);
 
-        $this->assertEquals(array(null, 'argument'), $response);
+        $this->assertEquals([null, 'argument'], $response);
     }
 
     public function testEchoService()
     {
         $connection = $this->dnode->connect(self::DNODE_TEST_HOST, self::DNODE_TEST_PORT);
 
-        $response = $connection->call('echo', array('argument'));
+        $response = $connection->call('echo', ['argument']);
 
-        $this->assertEquals(array(null, 'argument'), $response);
+        $this->assertEquals([null, 'argument'], $response);
     }
 
     public function testIoExceptionThrownIfRemoteNotAvailable()

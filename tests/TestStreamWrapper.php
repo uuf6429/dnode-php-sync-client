@@ -4,41 +4,77 @@ namespace uuf6429\DnodeSyncClient;
 
 class TestStreamWrapper
 {
+    /**
+     * @var self
+     */
+    private static $instance;
+
+    /**
+     * @var string[]
+     */
+    private $writeQueue = [];
+
+    /**
+     * @var string[]
+     */
+    private $readQueue = [];
+
     public function stream_open()
     {
+        self::$instance = $this;
+
         return true;
     }
 
-    private static $writeQueue = array();
-    private static $readQueue = array();
-
-    public static function addRead($data)
+    public function stream_close()
     {
-        self::$readQueue[] = $data;
+        self::$instance = null;
     }
 
     public function stream_read()
     {
-        return array_shift(self::$readQueue);
+        return count($this->readQueue) ? array_shift($this->readQueue) : false;
     }
 
     public function stream_eof()
     {
-        return (bool) self::$readQueue;
+        // Note: ideally we should have !count($this->readQueue) however PHP will terminate connection as soon as
+        // we return true, so instead we lie and let stream_read do the job.
+        return false;
     }
 
     public function stream_write($data)
     {
-        self::$writeQueue[] = $data;
+        $this->writeQueue[] = $data;
 
         return strlen($data);
     }
 
-    public static function getWrites()
+    public function addRead($data)
     {
-        $writes = self::$writeQueue;
-        self::$writeQueue = array();
+        $this->readQueue[] = $data;
+    }
+
+    public function getWrites()
+    {
+        $writes = $this->writeQueue;
+        $this->writeQueue = [];
 
         return $writes;
+    }
+
+    public function resetIO()
+    {
+        $this->readQueue = [];
+        $this->writeQueue = [];
+    }
+
+    public static function instance()
+    {
+        if (self::$instance === null) {
+            throw new \RuntimeException('StreamWrapper instance has not been set.');
+        }
+
+        return self::$instance;
     }
 }
