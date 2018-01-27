@@ -109,10 +109,8 @@ class DnodeTest extends \PHPUnit_Framework_TestCase
 
         $this->stopNodeEchoService();
 
-        $this->setExpectedException(
-            Exception\IOException::class,
-            "Can't read response from remote"
-        );
+        $this->expectException(Exception\IOException::class);
+        $this->expectExceptionMessage("Can't read response from remote");
 
         $connection->call('echo');
     }
@@ -123,7 +121,7 @@ class DnodeTest extends \PHPUnit_Framework_TestCase
 
         $connection->close();
 
-        $this->setExpectedException(Exception\ConnectionClosedException::class);
+        $this->expectException(Exception\ConnectionClosedException::class);
 
         $connection->call('echo');
     }
@@ -141,7 +139,7 @@ class DnodeTest extends \PHPUnit_Framework_TestCase
             // ignoring, this is expected
         }
 
-        $this->setExpectedException(Exception\ConnectionClosedException::class);
+        $this->expectException(Exception\ConnectionClosedException::class);
 
         $connection->call('echo');
     }
@@ -150,10 +148,8 @@ class DnodeTest extends \PHPUnit_Framework_TestCase
     {
         $this->stopNodeEchoService();
 
-        $this->setExpectedException(
-            Exception\IOException::class,
-            "Can't create socket to tcp://".self::DNODE_TEST_HOST.":".self::DNODE_TEST_PORT
-        );
+        $this->expectException(Exception\IOException::class);
+        $this->expectExceptionMessage("Can't create socket to tcp://".self::DNODE_TEST_HOST.":".self::DNODE_TEST_PORT);
 
         $this->dnode->connect(self::DNODE_TEST_HOST, self::DNODE_TEST_PORT);
     }
