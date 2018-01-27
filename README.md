@@ -1,7 +1,7 @@
 # DNode PHP Sync Client
 
 [![Build Status (TravisCI)](https://img.shields.io/travis/uuf6429/dnode-php-sync-client/master.svg?style=flat-square)](https://travis-ci.org/uuf6429/dnode-php-sync-client)
-[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%205.5-8892BF.svg?style=flat-square)](https://php.net/)
+[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%205.6-8892BF.svg?style=flat-square)](https://php.net/)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg?style=flat-square)](https://github.com/uuf6429/dnode-php-sync-client/blob/master/LICENSE.txt)
 [![Packagist](https://img.shields.io/packagist/v/uuf6429/dnode-php-sync-client.svg?style=flat-square)](https://packagist.org/packages/uuf6429/dnode-php-sync-client)
 
