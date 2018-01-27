@@ -18,10 +18,8 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     {
         $stream = fopen('testwrapper://', 'rw');
 
-        $this->setExpectedException(
-            Exception\IOException::class,
-            "Can't read method description from remote"
-        );
+        $this->expectException(Exception\IOException::class);
+        $this->expectExceptionMessage("Can't read method description from remote");
         new Connection($stream);
     }
 
@@ -30,10 +28,8 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         $stream = fopen('testwrapper://', 'rw');
         TestStreamWrapper::instance()->addRead("invalid json\n");
 
-        $this->setExpectedException(
-            Exception\ProtocolException::class,
-            'First line is not valid json: invalid json'
-        );
+        $this->expectException(Exception\ProtocolException::class);
+        $this->expectExceptionMessage('First line is not valid json: invalid json');
         new Connection($stream);
     }
 
@@ -42,10 +38,8 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         $stream = fopen('testwrapper://', 'rw');
         TestStreamWrapper::instance()->addRead("{}\n");
 
-        $this->setExpectedException(
-            Exception\ProtocolException::class,
-            'First line does not have method field: {}'
-        );
+        $this->expectException(Exception\ProtocolException::class);
+        $this->expectExceptionMessage('First line does not have method field: {}');
         new Connection($stream);
     }
 
@@ -54,10 +48,8 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         $stream = fopen('testwrapper://', 'rw');
         TestStreamWrapper::instance()->addRead('{"method": "not-methods"}'."\n");
 
-        $this->setExpectedException(
-            Exception\ProtocolException::class,
-            'First line method must be "methods": {"method": "not-methods"}'
-        );
+        $this->expectException(Exception\ProtocolException::class);
+        $this->expectExceptionMessage('First line method must be "methods": {"method": "not-methods"}');
         new Connection($stream);
     }
 
@@ -66,10 +58,8 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         $stream = fopen('testwrapper://', 'rw');
         TestStreamWrapper::instance()->addRead('{"method": "methods"}'."\n");
 
-        $this->setExpectedException(
-            Exception\ProtocolException::class,
-            'Methods arguments missing: {"method": "methods"}'
-        );
+        $this->expectException(Exception\ProtocolException::class);
+        $this->expectExceptionMessage('Methods arguments missing: {"method": "methods"}');
         new Connection($stream);
     }
 
@@ -78,10 +68,8 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         $stream = fopen('testwrapper://', 'rw');
         TestStreamWrapper::instance()->addRead('{"method": "methods", "arguments": []}'."\n");
 
-        $this->setExpectedException(
-            Exception\ProtocolException::class,
-            'Methods must have single argument: {"method": "methods", "arguments": []}'
-        );
+        $this->expectException(Exception\ProtocolException::class);
+        $this->expectExceptionMessage('Methods must have single argument: {"method": "methods", "arguments": []}');
         new Connection($stream);
     }
 
@@ -91,10 +79,8 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         $response = '{"method": "methods", "arguments": [{}]}';
         TestStreamWrapper::instance()->addRead("$response\n");
 
-        $this->setExpectedException(
-            Exception\ProtocolException::class,
-            "Remote is expected to have some methods: $response"
-        );
+        $this->expectException(Exception\ProtocolException::class);
+        $this->expectExceptionMessage("Remote is expected to have some methods: $response");
         new Connection($stream);
     }
 
@@ -171,10 +157,8 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
 
         TestStreamWrapper::instance()->addRead('{"method": 41}'."\n");
 
-        $this->setExpectedException(
-            Exception\ProtocolException::class,
-            'Response does not call expected callback, expected 42, got {"method": 41}'
-        );
+        $this->expectException(Exception\ProtocolException::class);
+        $this->expectExceptionMessage('Response does not call expected callback, expected 42, got {"method": 41}');
 
         $connection->call('method1');
     }
@@ -185,10 +169,8 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
 
         TestStreamWrapper::instance()->addRead("invalid json\n");
 
-        $this->setExpectedException(
-            Exception\ProtocolException::class,
-            'Response is not valid json: invalid json'
-        );
+        $this->expectException(Exception\ProtocolException::class);
+        $this->expectExceptionMessage('Response is not valid json: invalid json');
 
         $connection->call('method1');
     }
@@ -199,10 +181,8 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
 
         TestStreamWrapper::instance()->addRead("{}\n");
 
-        $this->setExpectedException(
-            Exception\ProtocolException::class,
-            'Response does not have method field: {}'
-        );
+        $this->expectException(Exception\ProtocolException::class);
+        $this->expectExceptionMessage('Response does not have method field: {}');
 
         $connection->call('method1');
     }
@@ -211,10 +191,8 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     {
         $connection = $this->initConnection();
 
-        $this->setExpectedException(
-            Exception\MethodNotExistsException::class,
-            'Method invalidMethod does not exists on remote.'
-        );
+        $this->expectException(Exception\MethodNotExistsException::class);
+        $this->expectExceptionMessage('Method invalidMethod does not exists on remote.');
 
         $connection->call('invalidMethod');
     }
@@ -225,10 +203,8 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
 
         TestStreamWrapper::instance()->addRead('{"method": 42, "links": [1]}'."\n");
 
-        $this->setExpectedException(
-            Exception\ProtocolException::class,
-            'Response contains links, we do not support that: {"method": 42, "links": [1]}'
-        );
+        $this->expectException(Exception\ProtocolException::class);
+        $this->expectExceptionMessage('Response contains links, we do not support that: {"method": 42, "links": [1]}');
 
         $connection->call('method1');
     }
@@ -240,10 +216,8 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         $response = '{"method": 42, "callbacks": {"1":[0]}}';
         TestStreamWrapper::instance()->addRead($response."\n");
 
-        $this->setExpectedException(
-            Exception\ProtocolException::class,
-            'Response contains callbacks, we do not support that: '.$response
-        );
+        $this->expectException(Exception\ProtocolException::class);
+        $this->expectExceptionMessage('Response contains callbacks, we do not support that: '.$response);
 
         $connection->call('method1');
     }
@@ -255,10 +229,8 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         $response = '{"method": 42, "arguments": null}';
         TestStreamWrapper::instance()->addRead($response."\n");
 
-        $this->setExpectedException(
-            Exception\ProtocolException::class,
-            'Response arguments must be array: '.$response
-        );
+        $this->expectException(Exception\ProtocolException::class);
+        $this->expectExceptionMessage('Response arguments must be array: '.$response);
 
         $connection->call('method1');
     }
