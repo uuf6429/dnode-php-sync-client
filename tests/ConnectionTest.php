@@ -170,7 +170,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         TestStreamWrapper::instance()->addRead("invalid json\n");
 
         $this->expectException(Exception\ProtocolException::class);
-        $this->expectException('Response is not valid json: invalid json');
+        $this->expectExceptionMessage('Response is not valid json: invalid json');
 
         $connection->call('method1');
     }
